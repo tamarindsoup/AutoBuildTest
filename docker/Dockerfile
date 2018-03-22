@@ -23,10 +23,11 @@
     USER developer
     ENV HOME /home/developer
 
-    #
+    # 必要なパッケージのインストール
     RUN sudo apt install --no-install-recommends -y \
     	bash-completion \
 	build-essential \
+	ca-certificates \
 	curl \
 	gcc-multilib \
 	git \
@@ -51,7 +52,7 @@
 
     #
     RUN wget -P ~/Download \
-	https://download.qemu.org/qemu-2.11.1.tar.xz
+    	https://download.qemu.org/qemu-2.11.1.tar.xz
 
     #
     RUN cd ~/Download && \
