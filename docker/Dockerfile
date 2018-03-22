@@ -16,8 +16,7 @@
         echo "developer:x:${uid}:" >> /etc/group && \
         echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
         chmod 0440 /etc/sudoers.d/developer && \
-        chown ${uid}:${gid} -R /home/developer && \
-	chown ${uid}:${gid} -R /home/developer/haribote
+        chown ${uid}:${gid} -R /home/developer
 	
     # 以降はユーザdeveloperとして実行	
     USER developer
@@ -25,44 +24,25 @@
 
     # 必要なパッケージのインストール
     RUN sudo apt install --no-install-recommends -y \
-    	bash-completion \
 	build-essential \
 	ca-certificates \
 	curl \
 	gcc-multilib \
-	git \
 	mtools \
 	nasm \
 	pkg-config \
-	python \
     	wget \
 	xz-utils
-	
 
-    #
-    RUN sudo apt build-dep --no-install-recommends -y qemu 
-
-    #
+    # binutilsの依存パッケージのインストール
     RUN sudo apt build-dep --no-install-recommends -y binutils
 
-    #
+    # binutilsのダウンロード
     RUN mkdir ~/Download && \
 	wget -P ~/Download \
 	http://ftp.jaist.ac.jp/pub/GNU/binutils/binutils-2.30.tar.xz
 
-    #
-    RUN wget -P ~/Download \
-    	https://download.qemu.org/qemu-2.11.1.tar.xz
-
-    #
-    RUN cd ~/Download && \
-    	tar axvf qemu-2.11.1.tar.xz && \
-    	cd qemu-2.11.1 && \
-    	./configure --target-list=i386-softmmu && \
-    	make -j8 && \
-    	sudo make -j8 install
-
-    #
+    # binutilsのビルドとインストール
     RUN cd ~/Download && \
     	tar axvf binutils-2.30.tar.xz && \
 	cd binutils-2.30 && \
@@ -70,29 +50,49 @@
     	make -j8 && \
     	sudo make -j8 install
 
-    #
+    #################################################################
+    # #
+    # # qemuの依存パッケージのインストール
+    # RUN sudo apt build-dep --no-install-recommends -y qemu 
+    # #
+    # # qemuのダウンロード
+    # RUN wget -P ~/Download \
+    # 	https://download.qemu.org/qemu-2.11.1.tar.xz
+    # #
+    # # qemuのビルドとインストール
+    # RUN cd ~/Download && \
+    # 	tar axvf qemu-2.11.1.tar.xz && \
+    # 	cd qemu-2.11.1 && \
+    # 	./configure --target-list=i386-softmmu && \
+    # 	make -j8 && \
+    # 	sudo make -j8 install
+    # #
+    #################################################################
+
+    # rustupとrustのnightlyビルドのインストール
     RUN curl https://sh.rustup.rs -sSf | \
     sh -s -- --default-toolchain nightly -y
 
-    #
+    # i686向けのクロスコンパイル環境の構築
     RUN . ~/.cargo/env && \
     	rustup target add i686-unknown-linux-gnu
+	
+    #################################################################
+    # #
+    # # rust auto completerのインストールとrustのソースコードのダウンロード
+    # RUN . ~/.cargo/env && \
+    # 	cargo install racer rustfmt rustsym && \
+    # 	rustup component add rust-src
+    # #
+    # # rustのソースコードへのパスを指定
+    # ENV RUST_SRC_PATH ~/.multirust/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src
+    # #
+    #################################################################
 
-    #
-    RUN . ~/.cargo/env && \
-    	cargo install racer && \
-    	rustup component add rust-src
-
-    #
-    ENV RUST_SRC_PATH ~/.multirust/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src
-
-    #
-    RUN . ~/.cargo/env && \
-    	cargo install --force rustfmt
-
+    # 設定ファイルをイメージ内にコピー
     COPY --chown=developer:developer ["./.bashrc", "/home/developer/.mybashrc"]
 
-    #
+    # コピーした設定ファイルが読み込まれるよう設定
     RUN echo ". ~/.mybashrc" >> ~/.profile
 
     CMD cd ~/ ; /bin/bash -l
