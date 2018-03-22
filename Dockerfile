@@ -71,3 +71,7 @@
     # 	cargo install rustfmt
 
     RUN sudo apt install -y nasm mtools
+
+    RUN echo ". ~/haribote/.bashrc" >> ~/.profile
+
+    CMD cd ~/ ; /bin/bash -l
