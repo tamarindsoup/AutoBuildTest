@@ -70,4 +70,4 @@
     # RUN . ~/.cargo/env && \
     # 	cargo install rustfmt
 
-    RUN sudo apt install -y nasm 
+    RUN sudo apt install -y nasm mtools
