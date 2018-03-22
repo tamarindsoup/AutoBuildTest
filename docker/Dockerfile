@@ -17,28 +17,40 @@
         echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
         chmod 0440 /etc/sudoers.d/developer && \
         chown ${uid}:${gid} -R /home/developer && \
-	chown ${uid}:${gid} -R /home/developer/haribote 
+	chown ${uid}:${gid} -R /home/developer/haribote
 	
     # 以降はユーザdeveloperとして実行	
     USER developer
     ENV HOME /home/developer
 
     #
-    RUN sudo apt install -y bash-completion pkg-config \
-    	     	 	    wget curl build-essential \
-			    gcc-multilib xz-utils python \
-			    nasm mtools 
+    RUN sudo apt install --no-install-recommends -y \
+    	bash-completion \
+	build-essential \
+	curl \
+	gcc-multilib \
+	git \
+	mtools \
+	nasm \
+	pkg-config \
+	python \
+    	wget \
+	xz-utils
+	
 
     #
-    RUN sudo apt build-dep -y qemu 
+    RUN sudo apt build-dep --no-install-recommends -y qemu 
 
     #
-    RUN sudo apt build-dep -y binutils
+    RUN sudo apt build-dep --no-install-recommends -y binutils
 
     #
     RUN mkdir ~/Download && \
 	wget -P ~/Download \
-	http://ftp.jaist.ac.jp/pub/GNU/binutils/binutils-2.30.tar.xz \
+	http://ftp.jaist.ac.jp/pub/GNU/binutils/binutils-2.30.tar.xz
+
+    #
+    RUN wget -P ~/Download \
 	https://download.qemu.org/qemu-2.11.1.tar.xz
 
     #
@@ -77,8 +89,10 @@
     RUN . ~/.cargo/env && \
     	cargo install --force rustfmt
 
+    COPY --chown=developer:developer ["./.bashrc", "/home/developer/.mybashrc"]
+
     #
-    RUN echo ". ~/haribote/.bashrc" >> ~/.profile
+    RUN echo ". ~/.mybashrc" >> ~/.profile
 
     CMD cd ~/ ; /bin/bash -l
     

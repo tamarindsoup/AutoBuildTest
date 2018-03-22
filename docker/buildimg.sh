@@ -1,4 +1,4 @@
 #! /bin/bash
 
-docker build -t hariboteOSByRust .
+docker build -t haribote-rust .
 
